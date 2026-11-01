@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 150" width="100%" height="100%">
+  <defs>
+    <!-- Gradients for Neural Violet / Memory Synapse -->
+    <linearGradient id="grad-neural" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C5CFC" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#4338CA" />
+    </linearGradient>
+
+    <linearGradient id="grad-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+
+    <linearGradient id="grad-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C5CFC" />
+      <stop offset="100%" stop-color="#0EA5E9" />
+    </linearGradient>
+
+    <linearGradient id="grad-text-os" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C5CFC" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <style>
+      .text-memory {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 58px;
+        font-weight: 800;
+        letter-spacing: -2px;
+        fill: #0F172A; /* Deep dark slate for light mode */
+      }
+      .text-os {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 58px;
+        font-weight: 800;
+        letter-spacing: -2px;
+        fill: url(#grad-text-os);
+      }
+      .badge-text {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        fill: #5B21B6;
+      }
+    </style>
+  </defs>
+
+  <!-- Neural Memory Mark / Brain & Synapse Loops -->
+  <g transform="translate(15, 0)">
+    <!-- Infinity / Neural Synapse Loop -->
+    <path d="M 45,75 C 45,45 75,45 85,75 C 95,105 125,105 125,75 C 125,45 95,45 85,75 C 75,105 45,105 45,75 Z"
+          fill="none"
+          stroke="url(#grad-neural)"
+          stroke-width="11"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.95" />
+
+    <!-- Converging AI Vector Pathway -->
+    <path d="M 85,38 L 85,112"
+          fill="none"
+          stroke="url(#grad-cyan)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-dasharray="4 6"
+          opacity="0.8" />
+
+    <!-- Left & Right Synapse Satellite Nodes -->
+    <circle cx="45" cy="75" r="7" fill="#6366F1" />
+    <circle cx="45" cy="75" r="3.5" fill="#FFFFFF" />
+
+    <circle cx="125" cy="75" r="7" fill="#0EA5E9" />
+    <circle cx="125" cy="75" r="3.5" fill="#FFFFFF" />
+
+    <!-- Central Neural Core Node -->
+    <circle cx="85" cy="75" r="16" fill="url(#grad-accent)" />
+    <circle cx="85" cy="75" r="9" fill="#FFFFFF" />
+    <circle cx="85" cy="75" r="5" fill="#7C5CFC" />
+  </g>
+
+  <!-- Typography: MemoryOS -->
+  <text x="175" y="93" class="text-memory">Memory</text>
+  <text x="420" y="93" class="text-os">OS</text>
+
+  <!-- Pulse Dot Indicator -->
+  <circle cx="512" cy="85" r="6" fill="url(#grad-text-os)" />
+
+  <!-- Tag Pill -->
+  <g transform="translate(176, 107)">
+    <rect width="168" height="20" rx="10" fill="#7C5CFC" fill-opacity="0.1" stroke="#7C5CFC" stroke-opacity="0.25" stroke-width="1" />
+    <text x="12" y="14" class="badge-text">UNIVERSAL AI LAYER</text>
+  </g>
+</svg>
