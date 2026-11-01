@@ -1,0 +1,48 @@
+{
+  "name": "memoryos-extension",
+  "displayName": "MemoryOS",
+  "version": "1.0.0",
+  "description": "Universal AI memory layer",
+  "author": "MemoryOS",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@clerk/chrome-extension": "^3.1.44",
+    "@plasmohq/messaging": "^0.7.2",
+    "@plasmohq/storage": "^1.15.0",
+    "lucide-react": "^1.22.0",
+    "plasmo": "0.88.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@memoryos/config": "workspace:*",
+    "@plasmohq/prettier-plugin-sort-imports": "latest",
+    "@types/chrome": "0.0.258",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "prettier": "3.2.4",
+    "typescript": "5.3.3"
+  },
+  "manifest": {
+    "permissions": [
+      "storage",
+      "alarms",
+      "activeTab",
+      "scripting",
+      "cookies"
+    ],
+    "host_permissions": [
+      "https://chat.openai.com/*",
+      "https://claude.ai/*",
+      "https://gemini.google.com/*",
+      "https://api.memoryos.ai/*",
+      "http://localhost:3000/*",
+      "http://127.0.0.1:3000/*"
+    ]
+  }
+}

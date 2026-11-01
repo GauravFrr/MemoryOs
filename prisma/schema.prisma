@@ -1,0 +1,275 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector"), uuidOssp(map: "uuid-ossp")]
+}
+
+model User {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  clerkId     String   @unique @map("clerk_id")
+  email       String   @unique
+  displayName String?  @map("display_name")
+  avatarUrl   String?  @map("avatar_url")
+  timezone    String   @default("UTC")
+  plan        String   @default("free")
+
+  cloudSyncEnabled  Boolean @default(false) @map("cloud_sync_enabled")
+  analyticsEnabled  Boolean @default(true) @map("analytics_enabled")
+
+  memoryLimit     Int @default(100) @map("memory_limit")
+  projectLimit    Int @default(3) @map("project_limit")
+  extractionLimit Int @default(10) @map("extraction_limit")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  projects      Project[]
+  conversations Conversation[]
+  memories      Memory[]
+  messages      Message[]
+  suggestions   MemorySuggestion[]
+  tags          Tag[]
+  subscriptions Subscription[]
+  usageLogs     UsageLog[]
+  syncQueue     SyncQueue[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  name        String
+  description String?
+  color       String   @default("#7C5CFC")
+  icon        String   @default("📁")
+  status      String   @default("active")
+  keywords    String[]
+  platforms   String[]
+
+  memoryCount       Int @default(0) @map("memory_count")
+  conversationCount Int @default(0) @map("conversation_count")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+  memories      Memory[]
+
+  @@index([userId], map: "idx_projects_user_id")
+  @@index([userId, status], map: "idx_projects_status")
+  @@map("projects")
+}
+
+model Conversation {
+  id        String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String  @map("user_id") @db.Uuid
+  projectId String? @map("project_id") @db.Uuid
+
+  platform   String
+  sessionUrl String? @map("session_url")
+  title      String?
+  summary    String?
+
+  messageCount    Int @default(0) @map("message_count")
+  memoryExtracted Int @default(0) @map("memory_extracted")
+
+  syncedAt DateTime? @map("synced_at")
+  syncHash String?   @map("sync_hash")
+
+  startedAt DateTime  @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  messages    Message[]
+  suggestions MemorySuggestion[]
+  memories    Memory[]
+
+  @@index([userId], map: "idx_conversations_user_id")
+  @@index([projectId], map: "idx_conversations_project_id")
+  @@index([userId, platform], map: "idx_conversations_platform")
+  @@index([userId, startedAt(sort: Desc)], map: "idx_conversations_started_at")
+  @@map("conversations")
+}
+
+model Message {
+  id             String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  conversationId String @map("conversation_id") @db.Uuid
+  userId         String @map("user_id") @db.Uuid
+
+  role        String
+  content     String
+  contentHash String? @map("content_hash")
+  tokenCount  Int?    @map("token_count")
+  position    Int
+  timestamp   DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId], map: "idx_messages_conversation_id")
+  @@index([conversationId, position], map: "idx_messages_position")
+  @@map("messages")
+}
+
+model Memory {
+  id             String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId         String  @map("user_id") @db.Uuid
+  projectId      String? @map("project_id") @db.Uuid
+  conversationId String? @map("conversation_id") @db.Uuid
+
+  type           String
+  content        String
+  structuredData Json    @default("{}") @map("structured_data")
+
+  embedding     Unsupported("vector(768)")?
+  searchVector  Unsupported("tsvector")?     @map("search_vector")
+
+  score      Int     @default(50)
+  confidence Decimal @default(0.8) @db.Decimal(3, 2)
+
+  status   String  @default("active")
+  platform String?
+
+  accessCount  Int       @default(0) @map("access_count")
+  lastAccessed DateTime? @map("last_accessed")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  memoryTags   MemoryTag[]
+
+  @@index([userId], map: "idx_memories_user_id")
+  @@index([projectId], map: "idx_memories_project_id")
+  @@index([userId, type], map: "idx_memories_type")
+  @@index([userId, status], map: "idx_memories_status")
+  @@index([userId, score(sort: Desc)], map: "idx_memories_score")
+  @@map("memories")
+}
+
+model MemorySuggestion {
+  id             String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId         String @map("user_id") @db.Uuid
+  conversationId String @map("conversation_id") @db.Uuid
+
+  type           String
+  content        String
+  structuredData Json     @default("{}") @map("structured_data")
+  confidence     Decimal? @db.Decimal(3, 2)
+  suggestedScore Int?     @map("suggested_score")
+
+  status   String  @default("pending")
+  memoryId String? @map("memory_id") @db.Uuid
+
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status], map: "idx_suggestions_user_pending")
+  @@map("memory_suggestions")
+}
+
+model Tag {
+  id     String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId String  @map("user_id") @db.Uuid
+  name   String
+  color  String?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryTags MemoryTag[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
+
+model MemoryTag {
+  memoryId String @map("memory_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+
+  memory Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([memoryId, tagId])
+  @@index([memoryId], map: "idx_memory_tags_memory")
+  @@index([tagId], map: "idx_memory_tags_tag")
+  @@map("memory_tags")
+}
+
+model Subscription {
+  id     String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  stripeCustomerId     String? @unique @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  stripePriceId        String? @map("stripe_price_id")
+
+  plan   String @default("free")
+  status String @default("active")
+
+  trialEndsAt        DateTime? @map("trial_ends_at")
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd   DateTime? @map("current_period_end")
+  canceledAt         DateTime? @map("canceled_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_subscriptions_user_id")
+  @@map("subscriptions")
+}
+
+model UsageLog {
+  id       String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  action   String
+  provider String   @default("gemini")
+  tokens   Int?
+  metadata Json     @default("{}")
+  period   String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, period], map: "idx_usage_logs_user_period")
+  @@index([userId, action, period], map: "idx_usage_logs_action")
+  @@map("usage_logs")
+}
+
+model SyncQueue {
+  id      String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+  action  String
+  payload Json
+  status  String @default("pending")
+
+  attempts  Int     @default(0)
+  lastError String? @map("last_error")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  processedAt DateTime? @map("processed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt], map: "idx_sync_queue_pending")
+  @@map("sync_queue")
+}

@@ -1,0 +1,27 @@
+{
+  "extends": "@memoryos/config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "paths": {
+      "~*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    ".plasmo/index.d.ts",
+    "index.d.ts",
+    "src",
+    "popup",
+    "contents",
+    "components",
+    "lib",
+    "api.ts",
+    "background.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".plasmo"
+  ]
+}
